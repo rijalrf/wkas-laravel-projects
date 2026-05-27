@@ -35,4 +35,4 @@ services:
 networks:
   shared-network:
     name: laravel-shared-network
-    driver: bridge
+    external: true
