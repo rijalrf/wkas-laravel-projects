@@ -2,18 +2,35 @@ version: "3.8"
 
 services:
   wkas-app:
-    image: ${{ secrets.DOCKERHUB_USERNAME }}/wkas-laravel:latest
+    image: ${DOCKERHUB_USERNAME}/wkas-laravel:latest
     container_name: wkas-app
     restart: unless-stopped
     ports:
       - "8090:80"
     networks:
-      - mkas-network
+      - shared-network
     environment:
       - APP_ENV=production
       - APP_DEBUG=false
+      - DB_CONNECTION=pgsql
+      - DB_HOST=host.docker.internal
+      - DB_PORT=5432
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file: .env
+
+  dozzle:
+    container_name: dozzle
+    image: amir20/dozzle:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "8888:8080"
+    networks:
+      - shared-network
+    restart: unless-stopped
 
 networks:
-  mkas-network:
-    name: mkas-laravel_default
+  shared-network:
+    name: laravel-shared-network
     external: true
