@@ -17,7 +17,8 @@ services:
       - DB_PORT=5432
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    env_file: .env
+    volumes:
+      - .env:/var/www/.env:ro
 
   dozzle:
     container_name: dozzle
