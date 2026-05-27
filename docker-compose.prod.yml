@@ -1,8 +1,8 @@
-version: '3.8'
+version: "3.8"
 
 services:
   wkas-app:
-    image: ${DOCKERHUB_USERNAME}/wkas-laravel:latest
+    image: ${{ secrets.DOCKERHUB_USERNAME }}/wkas-laravel:latest
     container_name: wkas-app
     restart: unless-stopped
     ports:

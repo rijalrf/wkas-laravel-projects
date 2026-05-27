@@ -2,7 +2,7 @@ name: Build, Push, and Deploy
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build-and-push:
@@ -63,17 +63,17 @@ jobs:
           port: ${{ secrets.SSH_PORT || '22' }}
           script: |
             mkdir -p ~/wkas-laravel
-            cd ~/wkas-laravel
-            
+            cd /home/deployer/wkas-laravel-projects
+
             # Export Dockerhub username for docker-compose.prod.yml
             export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
-            
+
             # Pull the latest image from Docker Hub using the production compose file
             docker compose -f docker-compose.prod.yml pull
-            
+
             # Restart the container using the production compose file
             docker compose -f docker-compose.prod.yml up -d
-            
+
             # Run post-deployment Laravel commands
             docker compose -f docker-compose.prod.yml exec -T wkas-app php artisan migrate --force
             docker compose -f docker-compose.prod.yml exec -T wkas-app php artisan config:cache
