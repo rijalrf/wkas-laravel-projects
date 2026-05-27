@@ -10,7 +10,7 @@ class PaymentPlanController extends Controller
 {
     public function index()
     {
-        $paymentPlans = PaymentPlan::with(['category', 'user'])->latest()->get();
+        $paymentPlans = PaymentPlan::with(['category', 'user'])->latest()->paginate(10);
         return view('backoffice.payment-plans.index', compact('paymentPlans'));
     }
 

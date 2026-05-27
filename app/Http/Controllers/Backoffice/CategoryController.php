@@ -11,7 +11,7 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        $categories = Category::latest()->get();
+        $categories = Category::latest()->paginate(10);
         return view('backoffice.categories.index', compact('categories'));
     }
 
@@ -19,21 +19,13 @@ class CategoryController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'image_url' => 'nullable|string',
-            'image_file' => 'nullable|image|max:2048'
+            'image_url' => 'nullable|string'
         ]);
 
-        $data = [
+        Category::create([
             'name' => $request->name,
             'image_url' => $request->image_url
-        ];
-
-        if ($request->hasFile('image_file')) {
-            $path = $request->file('image_file')->store('categories', 'public');
-            $data['image_url'] = Storage::url($path);
-        }
-
-        Category::create($data);
+        ]);
 
         return redirect()->route('backoffice.categories.index')->with('success', 'Category created successfully.');
     }
@@ -42,21 +34,13 @@ class CategoryController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'image_url' => 'nullable|string',
-            'image_file' => 'nullable|image|max:2048'
+            'image_url' => 'nullable|string'
         ]);
 
-        $data = [
+        $category->update([
             'name' => $request->name,
             'image_url' => $request->image_url
-        ];
-
-        if ($request->hasFile('image_file')) {
-            $path = $request->file('image_file')->store('categories', 'public');
-            $data['image_url'] = Storage::url($path);
-        }
-
-        $category->update($data);
+        ]);
 
         return redirect()->route('backoffice.categories.index')->with('success', 'Category updated successfully.');
     }

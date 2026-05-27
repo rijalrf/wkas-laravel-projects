@@ -8,6 +8,7 @@ use App\Http\Controllers\Backoffice\PaymentPlanController;
 use App\Http\Controllers\Backoffice\DepositController;
 use App\Http\Controllers\Backoffice\TransactionController;
 use App\Http\Controllers\Backoffice\ReportController;
+use App\Http\Controllers\Backoffice\GoogleDriveProxyController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -44,6 +45,9 @@ Route::middleware(['auth', 'admin'])->prefix('backoffice')->name('backoffice.')-
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('reports/pdf', [ReportController::class, 'downloadPdf'])->name('reports.pdf');
     Route::get('reports/xlsx', [ReportController::class, 'downloadXlsx'])->name('reports.xlsx');
+
+    // Google Drive Proxy Preview
+    Route::get('gdrive/preview', [GoogleDriveProxyController::class, 'preview'])->name('gdrive.preview');
 });
 
 Route::middleware('auth')->group(function () {
@@ -53,3 +57,4 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+

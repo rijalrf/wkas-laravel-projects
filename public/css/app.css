@@ -421,6 +421,13 @@ body {
     display: block;
 }
 
+/* Position dropdown above the row for the last 2 rows to prevent clipping */
+.custom-table tr:nth-last-child(-n+2) .action-dropdown-menu {
+    top: auto;
+    bottom: 100%;
+    margin-bottom: 0.25rem;
+}
+
 .action-dropdown-item {
     display: block;
     width: 100%;
@@ -512,4 +519,91 @@ body {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* Global Transition for Theme Toggling */
+body, .main-content, .top-header, .card, .table-container, .custom-table, .custom-table th, .custom-table td, .form-control, .btn, .modal-container, .modal-header, .modal-footer, .pagination-container, .pagination-container nav a {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Dark Theme Variables Override */
+.dark-theme {
+    --bg-primary: #0f172a;       /* slate-900 */
+    --bg-secondary: #1e293b;     /* slate-800 */
+    --text-primary: #f8fafc;     /* slate-50 */
+    --text-secondary: #94a3b8;   /* slate-400 */
+    --border: #334155;           /* slate-700 */
+    --primary-light: #312e81;     /* indigo-950 */
+    --success-light: #064e3b;     /* emerald-950 */
+    --warning-light: #78350f;     /* amber-950 */
+    --danger-light: #7f1d1d;      /* red-950 */
+}
+
+/* Dark mode tweaks */
+.dark-theme .logo-icon {
+    background-color: var(--primary);
+    color: #fff;
+}
+
+.dark-theme .custom-table tbody tr:hover {
+    background-color: rgba(51, 65, 85, 0.4);
+}
+
+.dark-theme .modal-overlay {
+    background-color: rgba(15, 23, 42, 0.8);
+}
+
+/* Pagination Styling */
+.pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.pagination-container nav {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.pagination-container nav a,
+.pagination-container nav span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 0.75rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
+    background-color: var(--bg-secondary);
+}
+
+.pagination-container nav a:hover {
+    background-color: var(--bg-primary);
+    border-color: var(--text-secondary);
+}
+
+.pagination-container nav span.current {
+    background-color: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+}
+
+.pagination-container nav span.disabled {
+    color: var(--text-secondary);
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: var(--bg-primary);
 }
