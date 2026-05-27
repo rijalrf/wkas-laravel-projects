@@ -1,6 +1,21 @@
+# Stage 1: Build frontend assets
+FROM node:20-alpine AS frontend-builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+# Stage 2: Install Composer dependencies
+FROM composer:2.8 AS composer-builder
+WORKDIR /app
+COPY composer*.json ./
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+
+# Stage 3: Final production image
 FROM php:8.4-cli-alpine
 
-# Install system dependencies & PHP extensions required for Laravel, PDF/Excel generation
+# Install system dependencies & PHP extensions required for Laravel
 RUN apk add --no-cache \
     bash \
     curl \
@@ -8,26 +23,28 @@ RUN apk add --no-cache \
     libxml2-dev \
     zip \
     unzip \
-    git \
     libzip-dev \
-    oniguruma-dev \
-    nodejs \
-    npm
+    oniguruma-dev
 
 RUN docker-php-ext-install pdo_mysql mbstring bcmath gd zip
-
-# Get Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Set working directory
 WORKDIR /var/www
 
-# Copy files
+# Copy application files
 COPY . .
 
-# Set permissions for Laravel
-RUN chmod -R 777 storage bootstrap/cache
+# Copy vendor dependencies from Composer stage
+COPY --from=composer-builder /app/vendor ./vendor
+
+# Copy compiled Vite assets from Frontend stage
+COPY --from=frontend-builder /app/public/build ./public/build
+
+# Set permissions for Laravel storage & cache
+RUN chmod -R 775 storage bootstrap/cache && \
+    chown -R www-data:www-data /var/www
 
 EXPOSE 8090
 
-CMD php artisan serve --host=0.0.0.0 --port=8090
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8090"]
+
