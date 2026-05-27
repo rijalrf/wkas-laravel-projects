@@ -6,7 +6,7 @@
 @section('content')
     <div class="card" style="padding: 0; overflow: hidden; height: calc(100vh - 180px);">
         <iframe 
-            src="http://localhost:8888" 
+            src="{{ $logUrl }}" 
             style="width: 100%; height: 100%; border: none;"
             title="Dozzle Log Viewer">
         </iframe>
