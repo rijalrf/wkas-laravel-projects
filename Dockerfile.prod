@@ -13,10 +13,12 @@ COPY composer*.json ./
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress
 
 # Stage 3: Final production image
-FROM php:8.4-cli-alpine
+FROM php:8.4-fpm-alpine
 
 # Install system dependencies & PHP extensions required for Laravel
 RUN apk add --no-cache \
+    nginx \
+    supervisor \
     bash \
     curl \
     libpng-dev \
@@ -24,9 +26,13 @@ RUN apk add --no-cache \
     zip \
     unzip \
     libzip-dev \
-    oniguruma-dev
+    oniguruma-dev \
+    icu-dev
 
-RUN docker-php-ext-install pdo_mysql mbstring bcmath gd zip
+RUN docker-php-ext-install pdo_mysql mbstring bcmath gd zip intl opcache xml dom
+
+# Copy OPcache configuration
+COPY .docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
 
 # Set working directory
 WORKDIR /var/www
@@ -40,11 +46,21 @@ COPY --from=composer-builder /app/vendor ./vendor
 # Copy compiled Vite assets from Frontend stage
 COPY --from=frontend-builder /app/public/build ./public/build
 
+# Copy Nginx configuration
+COPY .docker/nginx/default.conf /etc/nginx/http.d/default.conf
+
+# Copy Supervisor configuration
+COPY .docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
 # Set permissions for Laravel storage & cache
 RUN chmod -R 775 storage bootstrap/cache && \
     chown -R www-data:www-data /var/www
 
-EXPOSE 8090
+# Optimize Laravel for production (optional, can also be done in deployment script)
+# RUN php artisan config:cache && \
+#     php artisan route:cache && \
+#     php artisan view:cache
 
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8090"]
+EXPOSE 80
 
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

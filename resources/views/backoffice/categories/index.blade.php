@@ -64,6 +64,8 @@
                 </tbody>
             </table>
         </div>
+        <!-- Pagination Links -->
+        {{ $categories->appends(request()->query())->links('partials.pagination') }}
     </div>
 
     <!-- Create Modal -->
@@ -73,7 +75,7 @@
                 <h3 class="modal-title">Tambah Kategori</h3>
                 <button class="modal-close">&times;</button>
             </div>
-            <form action="{{ route('backoffice.categories.store') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('backoffice.categories.store') }}" method="POST">
                 @csrf
                 <div class="modal-body">
                     <div class="form-group">
@@ -81,12 +83,8 @@
                         <input type="text" name="name" id="name" class="form-control" placeholder="Contoh: Konsumsi" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="image_url">Image URL (Optional)</label>
-                        <input type="text" name="image_url" id="image_url" class="form-control" placeholder="https://example.com/icon.png">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="image_file">Atau Upload Gambar</label>
-                        <input type="file" name="image_file" id="image_file" class="form-control" accept="image/*">
+                        <label class="form-label" for="image_url">Image URL</label>
+                        <input type="text" name="image_url" id="image_url" class="form-control" placeholder="https://example.com/icon.png" required>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -104,7 +102,7 @@
                 <h3 class="modal-title">Edit Kategori</h3>
                 <button class="modal-close">&times;</button>
             </div>
-            <form id="editCategoryForm" action="" method="POST" enctype="multipart/form-data">
+            <form id="editCategoryForm" action="" method="POST">
                 @csrf
                 @method('PUT')
                 <div class="modal-body">
@@ -113,12 +111,8 @@
                         <input type="text" name="name" id="edit_name" class="form-control" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="edit_image_url">Image URL (Optional)</label>
-                        <input type="text" name="image_url" id="edit_image_url" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="edit_image_file">Atau Upload Gambar Baru</label>
-                        <input type="file" name="image_file" id="edit_image_file" class="form-control" accept="image/*">
+                        <label class="form-label" for="edit_image_url">Image URL</label>
+                        <input type="text" name="image_url" id="edit_image_url" class="form-control" required>
                     </div>
                 </div>
                 <div class="modal-footer">

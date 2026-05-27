@@ -57,6 +57,8 @@
                 </tbody>
             </table>
         </div>
+        <!-- Pagination Links -->
+        {{ $paymentPlans->appends(request()->query())->links('partials.pagination') }}
     </div>
 
     <!-- View Plan Modal -->

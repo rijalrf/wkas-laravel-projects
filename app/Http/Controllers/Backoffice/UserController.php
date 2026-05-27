@@ -12,18 +12,21 @@ class UserController extends Controller
     {
         $query = User::query();
 
-        if ($request->has('role') && in_array($request->role, ['admin', 'user'])) {
+        if ($request->filled('role') && in_array($request->role, ['admin', 'user'])) {
             $query->where('role', $request->role);
         }
 
-        $users = $query->latest()->get();
+        $users = $query->latest()->paginate(10);
         return view('backoffice.users.index', compact('users'));
     }
 
     public function update(Request $request, User $user)
     {
         $request->validate([
-            'role' => 'required|in:admin,user'
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'role' => 'required|in:admin,user',
+            'password' => 'nullable|string|min:8',
         ]);
 
         // Prevent admin from demoting themselves
@@ -31,11 +34,19 @@ class UserController extends Controller
             return redirect()->route('backoffice.users.index')->with('error', 'You cannot change your own admin role.');
         }
 
-        $user->update([
+        $updateData = [
+            'name' => $request->name,
+            'email' => $request->email,
             'role' => $request->role
-        ]);
+        ];
 
-        return redirect()->route('backoffice.users.index')->with('success', 'User role updated successfully.');
+        if ($request->filled('password')) {
+            $updateData['password'] = bcrypt($request->password);
+        }
+
+        $user->update($updateData);
+
+        return redirect()->route('backoffice.users.index')->with('success', 'User updated successfully.');
     }
 
     public function destroy(User $user)

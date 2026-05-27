@@ -3,25 +3,123 @@
 @section('title', 'Daftar Transaksi')
 @section('header_title', 'Transaksi')
 
+@section('styles')
+<style>
+    @keyframes shimmer {
+        0% {
+            background-position: -200% 0;
+        }
+        100% {
+            background-position: 200% 0;
+        }
+    }
+    .skeleton-loader {
+        background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--border) 50%, var(--bg-secondary) 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+    }
+    #detail_tx_photo {
+        cursor: zoom-in;
+        transition: opacity 0.2s ease-in-out;
+    }
+    #detail_tx_photo:hover {
+        opacity: 0.85;
+    }
+</style>
+@endsection
+
 @section('content')
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
         <h2 style="font-size: 1.125rem; font-weight: 600;">Daftar Transaksi Kas</h2>
-        
-        <!-- Filter Form -->
-        <form action="{{ route('backoffice.transactions.index') }}" method="GET" style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-            <select name="type" class="form-control" style="width: 140px; padding: 0.375rem 0.75rem;" onchange="this.form.submit()">
-                <option value="">Semua Tipe</option>
-                <option value="IN" {{ request('type') == 'IN' ? 'selected' : '' }}>MASUK (IN)</option>
-                <option value="OUT" {{ request('type') == 'OUT' ? 'selected' : '' }}>KELUAR (OUT)</option>
-            </select>
-            <select name="status" class="form-control" style="width: 150px; padding: 0.375rem 0.75rem;" onchange="this.form.submit()">
-                <option value="">Semua Status</option>
-                <option value="PENDING" {{ request('status') == 'PENDING' ? 'selected' : '' }}>PENDING</option>
-                <option value="APPROVED" {{ request('status') == 'APPROVED' ? 'selected' : '' }}>APPROVED</option>
-                <option value="REJECTED" {{ request('status') == 'REJECTED' ? 'selected' : '' }}>REJECTED</option>
-            </select>
-        </form>
     </div>
+    
+    <!-- Search and Filter Form -->
+    <form action="{{ route('backoffice.transactions.index') }}" method="GET" style="width: 100%; margin-bottom: 1.5rem;">
+        <div style="display: flex; gap: 0.75rem; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap;">
+            <!-- Keyword search -->
+            <div style="position: relative; flex-grow: 1; min-width: 250px;">
+                <input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="Cari kata kunci (No Ref, Keterangan, Nama, Kategori)..." style="padding-left: 2.5rem; height: 42px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 0.875rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary);"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </div>
+            
+            <!-- Toggle Filter Button -->
+            <button type="button" id="toggle-filter-btn" class="btn {{ request()->except(['page', 'search']) ? 'btn-primary' : 'btn-secondary' }}" style="padding: 0.625rem 1rem; height: 42px;" title="Tampilkan Filter">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                <span>Filter</span>
+                @if(request()->except(['page', 'search']))
+                    <span style="background-color: var(--primary); color: #fff; font-size: 0.7rem; font-weight: bold; border-radius: 50%; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; margin-left: 0.25rem;">{{ count(request()->except(['page', 'search'])) }}</span>
+                @endif
+            </button>
+            
+            <button type="submit" class="btn btn-primary" style="padding: 0.625rem 1.25rem; height: 42px;">Cari & Filter</button>
+            
+            @if(request()->anyFilled(['search', 'start_date', 'end_date', 'type', 'status', 'user_id', 'category_id']))
+                <a href="{{ route('backoffice.transactions.index') }}" class="btn btn-danger" style="padding: 0.625rem 1.25rem; height: 42px; display: inline-flex; align-items: center; justify-content: center;">Reset</a>
+            @endif
+        </div>
+
+        <!-- Collapsible Filter Group Panel -->
+        <div id="filter-group-panel" style="display: {{ request()->except(['page', 'search']) ? 'block' : 'none' }}; background: var(--bg-secondary); border: 1px solid var(--border); padding: 1.25rem; border-radius: var(--radius-lg); margin-bottom: 1rem; box-shadow: var(--shadow-sm);">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <!-- Date Range -->
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Tanggal Mulai</label>
+                    <input type="date" name="start_date" value="{{ request('start_date') }}" class="form-control">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Tanggal Selesai</label>
+                    <input type="date" name="end_date" value="{{ request('end_date') }}" class="form-control">
+                </div>
+
+                <!-- Type -->
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Tipe</label>
+                    <select name="type" class="form-control">
+                        <option value="">Semua Tipe</option>
+                        <option value="IN" {{ request('type') == 'IN' ? 'selected' : '' }}>MASUK (IN)</option>
+                        <option value="OUT" {{ request('type') == 'OUT' ? 'selected' : '' }}>KELUAR (OUT)</option>
+                    </select>
+                </div>
+
+                <!-- Status -->
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-control">
+                        <option value="">Semua Status</option>
+                        <option value="PENDING" {{ request('status') == 'PENDING' ? 'selected' : '' }}>PENDING</option>
+                        <option value="APPROVED" {{ request('status') == 'APPROVED' ? 'selected' : '' }}>APPROVED</option>
+                        <option value="REJECTED" {{ request('status') == 'REJECTED' ? 'selected' : '' }}>REJECTED</option>
+                    </select>
+                </div>
+
+                <!-- Oleh (User) -->
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Oleh (Pembuat)</label>
+                    <select name="user_id" class="form-control">
+                        <option value="">Semua Pengguna</option>
+                        @foreach($users as $u)
+                            <option value="{{ $u->id }}" {{ request('user_id') == $u->id ? 'selected' : '' }}>{{ $u->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Kategori -->
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Kategori</label>
+                    <select name="category_id" class="form-control">
+                        <option value="">Semua Kategori</option>
+                        @foreach($categories as $c)
+                            <option value="{{ $c->id }}" {{ request('category_id') == $c->id ? 'selected' : '' }}>{{ $c->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; margin-top: 1rem; gap: 0.5rem;">
+                <button type="submit" class="btn btn-primary" style="font-size: 0.8rem; padding: 0.4rem 1rem;">Terapkan Filter</button>
+            </div>
+        </div>
+    </form>
 
     <!-- Table Card -->
     <div class="card" style="padding: 0; overflow: hidden;">
@@ -84,6 +182,8 @@
                 </tbody>
             </table>
         </div>
+        <!-- Pagination Links -->
+        {{ $transactions->appends(request()->query())->links('partials.pagination') }}
     </div>
 
     <!-- View Transaction Modal -->
@@ -125,9 +225,12 @@
                 <!-- Google Drive Photo Display -->
                 <div style="border-top: 1px solid var(--border); padding-top: 0.75rem; margin-top: 0.75rem;">
                     <div style="font-weight: 600; color: var(--text-secondary); margin-bottom: 0.5rem;">Bukti Transaksi (Google Drive):</div>
-                    <div id="photo_display_container" style="width: 100%; height: 260px; background-color: var(--bg-primary); border: 1px dashed var(--border); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                        <img id="detail_tx_photo" src="" alt="Bukti Transaksi" style="max-width: 100%; max-height: 100%; object-fit: contain; display: none;">
-                        <span id="detail_tx_no_photo" style="color: var(--text-secondary); font-size: 0.85rem;">Tidak ada bukti foto.</span>
+                    <div id="photo_display_container" style="width: 100%; height: 260px; background-color: var(--bg-primary); border: 1px dashed var(--border); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;">
+                        <!-- Skeleton Loader -->
+                        <div id="detail_tx_skeleton" class="skeleton-loader" style="width: 100%; height: 100%; display: none; position: absolute; top: 0; left: 0;"></div>
+                        
+                        <img id="detail_tx_photo" src="" alt="Bukti Transaksi" style="max-width: 100%; max-height: 100%; object-fit: contain; display: none; position: relative; z-index: 1;">
+                        <span id="detail_tx_no_photo" style="color: var(--text-secondary); font-size: 0.85rem; position: relative; z-index: 1;">Tidak ada bukti foto.</span>
                     </div>
                 </div>
             </div>
@@ -135,6 +238,12 @@
                 <button type="button" class="btn btn-secondary btn-close-modal">Tutup</button>
             </div>
         </div>
+    </div>
+
+    <!-- Full Image Preview Modal -->
+    <div id="fullImageModal" class="modal-overlay" style="display: none; background-color: rgba(0, 0, 0, 0.9); z-index: 9999; justify-content: center; align-items: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
+        <span style="position: absolute; top: 20px; right: 30px; color: #fff; font-size: 40px; font-weight: bold; cursor: pointer; user-select: none;" onclick="closeFullImage()">&times;</span>
+        <img id="fullImageSrc" src="" alt="Preview Bukti" style="max-width: 90%; max-height: 90%; object-fit: contain; border-radius: var(--radius); box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
     </div>
 @endsection
 
@@ -184,15 +293,34 @@
                 // Render Photo using Google Drive proxy ID
                 const img = document.getElementById('detail_tx_photo');
                 const noPhoto = document.getElementById('detail_tx_no_photo');
+                const skeleton = document.getElementById('detail_tx_skeleton');
                 
                 if (data.photo) {
-                    // Using direct proxy URL for Google Drive file
-                    img.src = 'https://lh3.googleusercontent.com/d/' + data.photo;
-                    img.style.display = 'block';
+                    // Show skeleton and hide image / fallback text
+                    skeleton.style.display = 'block';
+                    img.style.display = 'none';
                     noPhoto.style.display = 'none';
+
+                    // Set up event listeners first, then assign source to prevent race condition
+                    img.onload = function() {
+                        skeleton.style.display = 'none';
+                        img.style.display = 'block';
+                    };
+
+                    img.onerror = function() {
+                        skeleton.style.display = 'none';
+                        img.style.display = 'none';
+                        noPhoto.innerText = 'Gagal memuat bukti foto dari Google Drive.';
+                        noPhoto.style.display = 'block';
+                    };
+
+                    // Using proxy URL for Google Drive file from gdrive-service
+                    img.src = "{{ route('backoffice.gdrive.preview') }}?path=" + encodeURIComponent(data.photo);
                 } else {
+                    skeleton.style.display = 'none';
                     img.src = '';
                     img.style.display = 'none';
+                    noPhoto.innerText = 'Tidak ada bukti foto.';
                     noPhoto.style.display = 'block';
                 }
 
@@ -203,5 +331,53 @@
                 alert("Gagal mengambil data detail transaksi.");
             });
     }
+
+    // Full image preview lightbox functions
+    function openFullImage(src) {
+        document.getElementById('fullImageSrc').src = src;
+        document.getElementById('fullImageModal').style.display = 'flex';
+    }
+
+    function closeFullImage() {
+        document.getElementById('fullImageModal').style.display = 'none';
+    }
+
+    // Attach click listener to detail image
+    document.getElementById('detail_tx_photo').addEventListener('click', function() {
+        openFullImage(this.src);
+    });
+
+    // Close full image overlay when clicking outside the image
+    document.getElementById('fullImageModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeFullImage();
+        }
+    });
+
+    // Toggle filter group panel
+    document.getElementById('toggle-filter-btn').addEventListener('click', function() {
+        const panel = document.getElementById('filter-group-panel');
+        if (panel.style.display === 'none') {
+            panel.style.display = 'block';
+            this.classList.remove('btn-secondary');
+            this.classList.add('btn-primary');
+        } else {
+            panel.style.display = 'none';
+            
+            // Revert back to secondary if no active group filters are in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            let hasFilters = false;
+            for (const [key, value] of urlParams.entries()) {
+                if (key !== 'page' && key !== 'search' && value !== '') {
+                    hasFilters = true;
+                    break;
+                }
+            }
+            if (!hasFilters) {
+                this.classList.remove('btn-primary');
+                this.classList.add('btn-secondary');
+            }
+        }
+    });
 </script>
 @endsection

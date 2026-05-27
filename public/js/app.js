@@ -27,6 +27,41 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    // Theme Toggle Logic
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('dark-theme');
+            const isDark = document.body.classList.contains('dark-theme');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateThemeToggleIcon(isDark);
+        });
+    }
+
+    // Initialize Theme on Load
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-theme');
+        updateThemeToggleIcon(true);
+    } else {
+        document.body.classList.remove('dark-theme');
+        updateThemeToggleIcon(false);
+    }
+
+    function updateThemeToggleIcon(isDark) {
+        const sunIcon = document.getElementById('theme-toggle-sun');
+        const moonIcon = document.getElementById('theme-toggle-moon');
+        if (sunIcon && moonIcon) {
+            if (isDark) {
+                sunIcon.style.display = 'block';
+                moonIcon.style.display = 'none';
+            } else {
+                sunIcon.style.display = 'none';
+                moonIcon.style.display = 'block';
+            }
+        }
+    }
 });
 
 // Helper functions for modals
