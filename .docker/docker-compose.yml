@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  wkas-app:
+    build:
+      context: ..
+      dockerfile: .docker/Dockerfile
+    container_name: wkas-app
+    restart: unless-stopped
+    volumes:
+      - ..:/var/www
+      # Mendaftarkan log agar mudah diakses di folder logs project ini
+      - ../storage/logs:/var/www/storage/logs
+    ports:
+      - "8090:8090"
+    networks:
+      - shared-network
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  dozzle:
+    container_name: dozzle
+    image: amir20/dozzle:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "8888:8080"
+    networks:
+      - shared-network
+    restart: unless-stopped
+
+networks:
+  shared-network:
+    name: laravel-shared-network
+    external: true

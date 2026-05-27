@@ -46,6 +46,9 @@ Route::middleware(['auth', 'admin'])->prefix('backoffice')->name('backoffice.')-
     Route::get('reports/pdf', [ReportController::class, 'downloadPdf'])->name('reports.pdf');
     Route::get('reports/xlsx', [ReportController::class, 'downloadXlsx'])->name('reports.xlsx');
 
+    // System Logs
+    Route::get('logs', [\App\Http\Controllers\Backoffice\LogController::class, 'index'])->name('logs.index');
+
     // Google Drive Proxy Preview
     Route::get('gdrive/preview', [GoogleDriveProxyController::class, 'preview'])->name('gdrive.preview');
 });
