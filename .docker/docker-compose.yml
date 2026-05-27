@@ -3,12 +3,12 @@ version: '3.8'
 services:
   wkas-app:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: .docker/Dockerfile
     container_name: wkas-app
     restart: unless-stopped
     volumes:
-      - .:/var/www
+      - ..:/var/www
     ports:
       - "8090:8090"
     networks:
@@ -16,6 +16,8 @@ services:
     environment:
       - APP_ENV=local
       - APP_DEBUG=true
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 networks:
   mkas-network:

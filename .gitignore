@@ -1,23 +1,33 @@
-/.phpunit.cache
-/node_modules
-/public/build
-/public/hot
-/public/storage
-/storage/*.key
-/storage/pail
+# PHP / Laravel
 /vendor
+/.phpunit.cache
+/.phpunit.result.cache
 .env
 .env.backup
 .env.production
 .phpactor.json
-.phpunit.result.cache
 Homestead.json
 Homestead.yaml
+/auth.json
+/storage/*.key
+/storage/pail
+
+# Frontend
+/node_modules
+/public/build
+/public/hot
+/public/storage
 npm-debug.log
 yarn-error.log
-/auth.json
+
+# IDEs / Editors
 /.fleet
 /.idea
 /.nova
 /.vscode
 /.zed
+.DS_Store
+Thumbs.db
+
+# Docker (Local Overrides)
+.docker/docker-compose.override.yml

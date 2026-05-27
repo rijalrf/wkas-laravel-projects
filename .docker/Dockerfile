@@ -10,7 +10,7 @@ RUN npm run build
 FROM composer:2.8 AS composer-builder
 WORKDIR /app
 COPY composer*.json ./
-RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress --no-scripts
 
 # Stage 3: Final production image
 FROM php:8.4-cli-alpine
@@ -24,9 +24,10 @@ RUN apk add --no-cache \
     zip \
     unzip \
     libzip-dev \
-    oniguruma-dev
+    oniguruma-dev \
+    postgresql-dev
 
-RUN docker-php-ext-install pdo_mysql mbstring bcmath gd zip
+RUN docker-php-ext-install pdo_pgsql mbstring bcmath gd zip
 
 # Set working directory
 WORKDIR /var/www
