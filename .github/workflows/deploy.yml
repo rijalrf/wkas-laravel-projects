@@ -52,7 +52,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT || '22' }}
           source: ".docker/docker-compose.prod.yml"
-          target: "~/wkas-laravel"
+          target: "/home/deployer/wkas-laravel-projects"
           strip_components: 1
 
       - name: Deploy to Server via SSH
@@ -63,8 +63,8 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT || '22' }}
           script: |
-            mkdir -p ~/wkas-laravel
-            cd ~/wkas-laravel
+            mkdir -p /home/deployer/wkas-laravel-projects
+            cd /home/deployer/wkas-laravel-projects
 
             # Export Dockerhub username for docker-compose.prod.yml
             export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
