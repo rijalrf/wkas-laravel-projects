@@ -10,7 +10,7 @@ RUN npm run build
 FROM composer:2.8 AS composer-builder
 WORKDIR /app
 COPY composer*.json ./
-RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress --no-scripts
 
 # Stage 3: Final production image
 FROM php:8.4-fpm-alpine
